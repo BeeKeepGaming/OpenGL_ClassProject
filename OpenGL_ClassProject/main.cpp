@@ -10,12 +10,15 @@ using namespace std;
 //GLFW
 #include <GLFW/glfw3.h>
 
+//Link Shader File
+#include "Shader.h"
+
 //Window Dimention
 const GLint WIDTH = 960, HEIGHT = 720;
 
 int main()
 {
-	#pragma region Initialisation of a window
+#pragma region Initialisation of a window
 	// Initialise GLFW
 	glfwInit();
 
@@ -58,6 +61,51 @@ int main()
 	//Define viewport dimentions
 	glViewport(0, 0, screenW, screenH);
 
+	// Enable alpha support for images ***
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	//Build & Compile Shader Program
+	Shader ourShader("core.vs", "core.frag");
+
+	// Set vertex data for our rectangle ***
+	GLfloat vertices[] =
+	{
+		//Positions                //Colours
+		0.5f, -0.5f, 0.0f,        1.0f, 0.0f, 0.0f,    //BOTTOM RIGHT
+		-0.5f, -0.5f, 0.0f,       0.0f, 1.0f, 0.0f,    //BOTTOM LEFT
+		0.0f, 0.5f, 0.0f,         0.0f, 0.0f, 1.0f,    //TOP RIGHT
+	};
+
+	// Generate the vertex arrays and vertex buffers and save them into variables
+	GLuint VBA, VOA;
+	glGenVertexArrays(1, &VOA);
+	glGenBuffers(1, &VBA);
+
+	// Bind the vertex array object
+	glBindVertexArray(VOA);
+
+	// Bind and set the vertex buffers
+	glBindBuffer(GL_ARRAY_BUFFER, VBA);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	// Create the vertex pointer and enable the vertex array
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0); //Position
+	glEnableVertexAttribArray(0);
+
+	// Create the vertex pointer and enable the vertex array
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (GLvoid*)0); //Position
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //Colour
+	glEnableVertexAttribArray(1);
+
+	// Bind the buffer
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// Unbind the vertex array to prevent strange bugs
+	glBindVertexArray(0);
+#pragma endregion
+
 	//Game loop
 	while (!glfwWindowShouldClose(window)) {
 		//Checks for events and calls corresponding response
@@ -65,18 +113,25 @@ int main()
 
 		//Render
 		//Clear the colour buffer
-		glClearColor(0.4f, 0.8f, 0.4f, 1.0f);
-		//6.0f, 226.0f, 109.0f
+		glClearColor(0.1f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		// DRAW OUR TRIANGLE
+		ourShader.Use();
+		glBindVertexArray(VOA);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(0); // Unbinding
 
 		//Draw the OpenGL window/viewport
 		glfwSwapBuffers(window);
 	}
 
+	// Properly deallocate all resources
+	glDeleteVertexArrays(1, &VOA);
+	glDeleteBuffers(1, &VBA);
+
 	//Terminate GLFW and clear any resources from GLFW
 	glfwTerminate();
-
-	#pragma endregion
 
 	return EXIT_SUCCESS;
 }
