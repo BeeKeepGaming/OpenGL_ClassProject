@@ -10,6 +10,9 @@ using namespace std;
 //GLFW
 #include <GLFW/glfw3.h>
 
+// SOIL2
+#include "SOIL2/SOIL2.h"
+
 //Link Shader File
 #include "Shader.h"
 
@@ -61,26 +64,35 @@ int main()
 	//Define viewport dimentions
 	glViewport(0, 0, screenW, screenH);
 
-	// Enable alpha support for images ***
+	// Enable alpha support for images
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//Build & Compile Shader Program
 	Shader ourShader("core.vs", "core.frag");
 
-	// Set vertex data for our rectangle ***
+	// Set vertex data for our rectangle
 	GLfloat vertices[] =
 	{
-		//Positions                //Colours
-		0.5f, -0.5f, 0.0f,        1.0f, 0.0f, 0.0f,    //BOTTOM RIGHT
-		-0.5f, -0.5f, 0.0f,       0.0f, 1.0f, 0.0f,    //BOTTOM LEFT
-		0.0f, 0.5f, 0.0f,         0.0f, 0.0f, 1.0f,    //TOP RIGHT
+		//Positions                //Colours                //Texture Coordinates
+		0.5f, 0.5f, 0.0f,        1.0f, 0.0f, 0.0f,        1.0f, 1.0f, //TOP RIGHT
+		0.5f, -0.5f, 0.0f,       0.0f, 1.0f, 0.0f,        1.0f, 0.0f, //BOTTOM RIGHT
+		-0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f,        0.0f, 0.0f, //BOTTOM LEFT
+		-0.5f, 0.5f, 0.0f,       1.0f, 1.0f, 0.0f,        0.0f, 1.0f, //BOTTOM LEFT
+	};
+
+	// Create array for indices
+	GLuint indices[] =
+	{
+		0, 1, 3, // First Triangle
+		1, 2, 3  // Second Triangle
 	};
 
 	// Generate the vertex arrays and vertex buffers and save them into variables
-	GLuint VBA, VOA;
+	GLuint VBA, VOA, EBO;
 	glGenVertexArrays(1, &VOA);
 	glGenBuffers(1, &VBA);
+	glGenBuffers(1, &EBO); // Generate EBO
 
 	// Bind the vertex array object
 	glBindVertexArray(VOA);
@@ -89,21 +101,56 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBA);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	// Create the vertex pointer and enable the vertex array
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), (GLvoid*)0); //Position
+	// Bind EBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	/* Create the vertex pointer and enable the vertex array and enable element buffer */
+	//Poition coordinate attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0); //Position
 	glEnableVertexAttribArray(0);
 
-	// Create the vertex pointer and enable the vertex array
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (GLvoid*)0); //Position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //Colour
+	//Colour coordinate attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //Colour
 	glEnableVertexAttribArray(1);
+
+	// Texture coordinate attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //Texture
+	glEnableVertexAttribArray(2);
 
 	// Bind the buffer
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// Unbind the vertex array to prevent strange bugs
 	glBindVertexArray(0);
+
+	#pragma region Texrure creation & loading
+		// Create and load texture
+		GLuint texture;
+		int width, height;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		// Set texture parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		// Set texture filtering
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// Actual texture loading code
+		unsigned char* image = SOIL_load_image("res/images/image1.png", &width, &height, 0, SOIL_LOAD_RGBA);
+
+		// Specify 2D texture image
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+		// Generate mipmaps
+		glGenerateMipmap(GL_TEXTURE_2D);
+		SOIL_free_image_data(image);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	#pragma endregion
+
 #pragma endregion
 
 	//Game loop
@@ -116,10 +163,16 @@ int main()
 		glClearColor(0.1f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// DRAW OUR TRIANGLE
+		/// DRAW OUR RECTANGLE
+		// make out rectangle texture show
 		ourShader.Use();
+		glActiveTexture(GL_TEXTURE0); //activate specified texture
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture"), 0);
+
+		// Draw container
 		glBindVertexArray(VOA);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0); // Unbinding
 
 		//Draw the OpenGL window/viewport
@@ -129,6 +182,7 @@ int main()
 	// Properly deallocate all resources
 	glDeleteVertexArrays(1, &VOA);
 	glDeleteBuffers(1, &VBA);
+	glDeleteBuffers(1, &EBO);
 
 	//Terminate GLFW and clear any resources from GLFW
 	glfwTerminate();

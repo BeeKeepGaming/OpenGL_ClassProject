@@ -109,8 +109,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(SolutionDir)External_Libraries\OpenGL_Libraries\GLEW\glew-2.1.0\lib\Release\x64;%(SolutionDir)External_Libraries\OpenGL_Libraries\GLFW_win64\glfw-3.3.8.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(SolutionDir)External_Libraries\SOIL2\lib;%(SolutionDir)External_Libraries\OpenGL_Libraries\GLEW\glew-2.1.0\lib\Release\x64;%(SolutionDir)External_Libraries\OpenGL_Libraries\GLFW_win64\glfw-3.3.8.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;soil2-debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
