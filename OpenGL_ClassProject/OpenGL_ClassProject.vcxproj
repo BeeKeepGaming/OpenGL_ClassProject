@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>%(SolutionDir)External_Libraries\OpenGL_Libraries\GLEW\glew-2.1.0\include;%(SolutionDir)External_Libraries\OpenGL_Libraries\GLFW_win64\glfw-3.3.8.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(SolutionDir)External_Libraries\glm;%(SolutionDir)External_Libraries\OpenGL_Libraries\GLEW\glew-2.1.0\include;%(SolutionDir)External_Libraries\OpenGL_Libraries\GLFW_win64\glfw-3.3.8.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

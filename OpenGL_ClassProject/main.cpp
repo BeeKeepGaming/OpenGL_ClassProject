@@ -5,13 +5,18 @@ using namespace std;
 
 //GLEW
 #define GLEW_STATIC
-#include <GL/glew.h>
+#include "GL/glew.h"
 
 //GLFW
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 // SOIL2
 #include "SOIL2/SOIL2.h"
+
+// Glm
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 //Link Shader File
 #include "Shader.h"
@@ -64,6 +69,9 @@ int main()
 	//Define viewport dimentions
 	glViewport(0, 0, screenW, screenH);
 
+	// Enable depth in the project
+	glEnable(GL_DEPTH_TEST);
+
 	// Enable alpha support for images
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -72,27 +80,64 @@ int main()
 	Shader ourShader("core.vs", "core.frag");
 
 	// Set vertex data for our rectangle
+	// Set vertex data for our cube ***
 	GLfloat vertices[] =
 	{
-		//Positions                //Colours                //Texture Coordinates
-		0.5f, 0.5f, 0.0f,        1.0f, 0.0f, 0.0f,        1.0f, 1.0f, //TOP RIGHT
-		0.5f, -0.5f, 0.0f,       0.0f, 1.0f, 0.0f,        1.0f, 0.0f, //BOTTOM RIGHT
-		-0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f,        0.0f, 0.0f, //BOTTOM LEFT
-		-0.5f, 0.5f, 0.0f,       1.0f, 1.0f, 0.0f,        0.0f, 1.0f, //BOTTOM LEFT
-	};
+		//Positions                //Texture Coords
+		/// Front Triangles
+		-0.5f, -0.5f, 0.5f,			0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,		1.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,			1.0f, 1.0f,
 
-	// Create array for indices
-	GLuint indices[] =
-	{
-		0, 1, 3, // First Triangle
-		1, 2, 3  // Second Triangle
+		0.5f, -0.5f, -0.5f,			1.0f, 1.0f,
+		0.5f, -0.5f, 0.5f,			0.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f,			0.0f, 0.0f,
+		/// Right Triangles
+		0.5f, -0.5f, 0.5f,			0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,			1.0f, 0.0f,
+		0.5f, 0.5f, -0.5f,			1.0f, 1.0f,
+
+		0.5f, 0.5f, -0.5f,			1.0f, 1.0f,
+		0.5f, 0.5f, 0.5f,			0.0f, 1.0f,
+		0.5f, -0.5f, 0.5f,			0.0f, 0.0f,
+		/// Back Triangles
+		0.5f, 0.5f, 0.5f,			0.0f, 0.0f,
+		0.5f, 0.5f, -0.5f,			1.0f, 0.0f,
+		-0.5f, 0.5f, -0.5f,			1.0f, 1.0f,
+
+		-0.5f, 0.5f, -0.5f,			1.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f,			0.0f, 1.0f,
+		0.5f, 0.5f, 0.5f,			0.0f, 0.0f,
+		/// Left Triangles
+		-0.5f, 0.5f, 0.5f,			0.0f, 0.0f,
+		-0.5f, 0.5f, -0.5f,			1.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,		1.0f, 1.0f,
+
+		-0.5f, -0.5f, -0.5f,		1.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f,			0.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f,			0.0f, 0.0f,
+		/// Top Triangles
+		-0.5f, 0.5f, 0.5f,			0.0f, 0.0f,
+		-0.5f, -0.5f, 0.5f,			1.0f, 0.0f,
+		0.5f, -0.5f, 0.5f,			1.0f, 1.0f,
+
+		0.5f, -0.5f, 0.5f,			1.0f, 1.0f,
+		0.5f, 0.5f, 0.5f,			0.0f, 1.0f,
+		-0.5f, 0.5f, 0.5f,			0.0f, 0.0f,
+		/// Bottom Triangles
+		-0.5f, -0.5f, -0.5f,		0.0f, 0.0f,
+		-0.5f, 0.5f, -0.5f,			1.0f, 0.0f,
+		0.5f, 0.5f, -0.5f,			1.0f, 1.0f,
+
+		0.5f, 0.5f, -0.5f,			1.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,			0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,		0.0f, 0.0f
 	};
 
 	// Generate the vertex arrays and vertex buffers and save them into variables
-	GLuint VBA, VOA, EBO;
+	GLuint VBA, VOA;
 	glGenVertexArrays(1, &VOA);
 	glGenBuffers(1, &VBA);
-	glGenBuffers(1, &EBO); // Generate EBO
 
 	// Bind the vertex array object
 	glBindVertexArray(VOA);
@@ -101,25 +146,13 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBA);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	// Bind EBO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	/* Create the vertex pointer and enable the vertex array and enable element buffer */
-	//Poition coordinate attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0); //Position
+	// Create the vertex pointer and enable the vertex array
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0); //Position
 	glEnableVertexAttribArray(0);
 
-	//Colour coordinate attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //Colour
-	glEnableVertexAttribArray(1);
-
 	// Texture coordinate attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //Texture
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); //Texture
 	glEnableVertexAttribArray(2);
-
-	// Bind the buffer
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// Unbind the vertex array to prevent strange bugs
 	glBindVertexArray(0);
@@ -149,7 +182,15 @@ int main()
 		glGenerateMipmap(GL_TEXTURE_2D);
 		SOIL_free_image_data(image);
 		glBindTexture(GL_TEXTURE_2D, 0);
+
 	#pragma endregion
+
+		// Create Projection Matrix
+		glm::mat4 projection(1.0f);
+		//Perspective view
+		projection = glm::perspective(glm::radians(45.0f), (GLfloat)screenW / (GLfloat)screenH, 0.1f, 100.0f);
+		//Orthographic view
+		//projection = glm::ortho(0.0f, (GLfloat)screenW, 0.0f, (GLfloat)screenH, 0.1f, 100.0f);
 
 #pragma endregion
 
@@ -161,19 +202,40 @@ int main()
 		//Render
 		//Clear the colour buffer
 		glClearColor(0.1f, 0.3f, 0.5f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		/// DRAW OUR RECTANGLE
-		// make out rectangle texture show
+		// DRAW OUR CUBE		
 		ourShader.Use();
-		glActiveTexture(GL_TEXTURE0); //activate specified texture
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture"), 0);
+
+		// CREATE CUBE *
+		glm::mat4 model(1.0f);
+		glm::mat4 view(1.0f);
+		//Perspective view
+		model = glm::rotate(model, (GLfloat)glfwGetTime() * 1.0f, glm::vec3(0.5f, 1.0f, 0.0f)); //Perspective view
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f)); //Perspective view
+		//Orthographic view
+		//model = glm::rotate(model, 0.5f, glm::vec3(1.0f, 0.0f, 0.0f)); //Orthographic view
+		//view = glm::translate(view, glm::vec3(screenW/2, screenH/2, -700.0f)); //Orthographic view
+
+		// Get the uniform locations for our matrices
+		GLint modelLoc = glGetUniformLocation(ourShader.Program, "model");
+		GLint viewLoc = glGetUniformLocation(ourShader.Program, "view");
+		GLint projLoc = glGetUniformLocation(ourShader.Program, "projection");
+
+		// Pass locations to shaders ***
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 		// Draw container
 		glBindVertexArray(VOA);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0); // Unbinding
+
+		// Activate specified texture
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 0);
 
 		//Draw the OpenGL window/viewport
 		glfwSwapBuffers(window);
@@ -182,8 +244,7 @@ int main()
 	// Properly deallocate all resources
 	glDeleteVertexArrays(1, &VOA);
 	glDeleteBuffers(1, &VBA);
-	glDeleteBuffers(1, &EBO);
-
+	
 	//Terminate GLFW and clear any resources from GLFW
 	glfwTerminate();
 
