@@ -140,6 +140,8 @@
   <ItemGroup>
     <None Include="core.frag" />
     <None Include="core.vs" />
+    <None Include="coreCB.frag" />
+    <None Include="coreCB.vs" />
     <None Include="coreHM.frag" />
     <None Include="coreHM.vs" />
   </ItemGroup>

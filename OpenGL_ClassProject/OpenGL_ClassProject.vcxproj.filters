@@ -40,5 +40,11 @@
     <None Include="coreHM.frag">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="coreCB.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="coreCB.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
